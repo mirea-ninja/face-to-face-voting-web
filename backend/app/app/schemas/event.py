@@ -1,6 +1,8 @@
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel
+
+from .user import User
 
 
 # Shared properties
@@ -23,6 +25,7 @@ class EventUpdate(EventBase):
 class EventInDBBase(EventBase):
     id: int
     owner_id: int
+    participants: List[User]
 
     class Config:
         orm_mode = True

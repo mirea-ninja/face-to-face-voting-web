@@ -16,6 +16,13 @@ user_events_association_table = Table(
     Column("event_id", ForeignKey("event.id"), primary_key=True),
 )
 
+moderator_events_association_table = Table(
+    "moderator_events_association",
+    Base.metadata,
+    Column("user_id", ForeignKey("user.id"), primary_key=True),
+    Column("event_id", ForeignKey("event.id"), primary_key=True),
+)
+
 
 class User(Base):
     id = Column(Integer, primary_key=True, index=True)
@@ -27,5 +34,10 @@ class User(Base):
     items = relationship("Item", back_populates="owner")
     events_owner = relationship("Event", back_populates="owner")
     events = relationship(
-        "Event", secondary=user_events_association_table, back_populates="users"
+        "Event", secondary=user_events_association_table, back_populates="participants"
+    )
+    moderator_in = relationship(
+        "Event",
+        secondary=moderator_events_association_table,
+        back_populates="moderators",
     )
