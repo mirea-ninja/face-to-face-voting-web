@@ -11,7 +11,7 @@ class EventBase(BaseModel):
 
 # Properties to receive on Event creation
 class EventCreate(EventBase):
-    creator_id: int
+    pass
 
 
 # Properties to receive on Event update
@@ -22,7 +22,7 @@ class EventUpdate(EventBase):
 # Properties shared by models stored in DB
 class EventInDBBase(EventBase):
     id: int
-    creator_id: int
+    owner_id: int
 
     class Config:
         orm_mode = True

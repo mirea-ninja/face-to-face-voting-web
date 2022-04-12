@@ -25,5 +25,7 @@ class User(Base):
     is_active = Column(Boolean(), default=True)
     is_superuser = Column(Boolean(), default=False)
     items = relationship("Item", back_populates="owner")
-    created_events = relationship("Event", back_populates="creator")
-    events = relationship("Event", secondary=user_events_association_table, back_populates="users")
+    events_owner = relationship("Event", back_populates="owner")
+    events = relationship(
+        "Event", secondary=user_events_association_table, back_populates="users"
+    )

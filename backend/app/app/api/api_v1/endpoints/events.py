@@ -38,7 +38,9 @@ def create_event(
     """
     Create new event.
     """
-    event = crud.event.create_with_owner(db=db, obj_in=event_in, owner_id=current_user.id)
+    event = crud.event.create_with_owner(
+        db=db, obj_in=event_in, owner_id=current_user.id
+    )
     return event
 
 
