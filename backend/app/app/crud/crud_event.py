@@ -5,7 +5,9 @@ from requests import Session
 from sqlalchemy.orm import Session
 
 from app.models.event import Event
+from app.models.user import User
 from app.schemas.event import EventCreate, EventUpdate
+from app.utils import ModeratorType
 
 from .base import CRUDBase
 
@@ -31,13 +33,27 @@ class CRUDEvent(CRUDBase[Event, EventCreate, EventUpdate]):
             .limit(limit)
             .all()
         )
-        
+
     def add_participant_to_event(
-        self, db: Session, *, event_id: int, user_id: int
+        self, db: Session, *, event_id: int, user: User
     ) -> Event:
-        return (
-            db.query(self.model).filter(self.model.id == event_id).first()
-        )
+        db_obj = db.query(self.model).filter(self.model.id == event_id).first()
+        db_obj.participants.append(user)
+        db.commit()
+        db.refresh(db_obj)
+        return db_obj
+
+    def add_moderator_to_event(
+        self, db: Session, *, event_id: int, user: User, moderator_type: ModeratorType
+    ) -> Event:
+        db_obj = db.query(self.model).filter(self.model.id == event_id).first()
+        if moderator_type.ACCESS:
+            db_obj.access_moderators.append(user)
+        elif moderator_type.VOTING:
+            db_obj.voting_moderators.append(user)
+        db.commit()
+        db.refresh(db_obj)
+        return db_obj
 
 
 event = CRUDEvent(Event)

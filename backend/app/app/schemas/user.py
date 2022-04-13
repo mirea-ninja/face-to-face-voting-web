@@ -5,8 +5,10 @@ from pydantic import BaseModel, EmailStr
 
 # Shared properties
 class UserBase(BaseModel):
+    academic_group: Optional[str] = None
     email: Optional[EmailStr] = None
     is_active: Optional[bool] = True
+    is_student: Optional[bool] = True
     is_superuser: bool = False
     full_name: Optional[str] = None
 

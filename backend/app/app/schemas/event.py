@@ -26,6 +26,8 @@ class EventInDBBase(EventBase):
     id: int
     owner_id: int
     participants: List[User]
+    access_moderators: List[User]
+    voting_moderators: List[User]
 
     class Config:
         orm_mode = True

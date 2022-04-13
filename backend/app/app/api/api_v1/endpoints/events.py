@@ -1,10 +1,11 @@
 from typing import Any, List
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Path
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
+from app.utils import ModeratorType
 
 router = APIRouter()
 
@@ -40,6 +41,85 @@ def create_event(
     """
     event = crud.event.create_with_owner(
         db=db, obj_in=event_in, owner_id=current_user.id
+    )
+    return event
+
+
+@router.put("/{event_id}/{user_id}", response_model=schemas.Event)
+def add_participant_to_event(
+    *,
+    db: Session = Depends(deps.get_db),
+    event_id: int,
+    user_id: int,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Add a participant to an event.
+    """
+    event = crud.event.get(db=db, id=event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="event not found")
+    user = crud.user.get(db=db, id=user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="user not found")
+
+    if not crud.user.is_superuser(current_user) and (event.owner_id != current_user.id):
+        for user in event.access_moderators:
+            pass
+        else:
+            raise HTTPException(status_code=400, detail="Not enough permissions")
+
+    event = crud.event.add_participant_to_event(db=db, event_id=event_id, user=user)
+    return event
+
+
+@router.put("/mod/{moderator_type}/{event_id}/{user_id}", response_model=schemas.Event)
+def add_moderator_to_event(
+    *,
+    db: Session = Depends(deps.get_db),
+    moderator_type: str = Path(
+        ModeratorType.ACCESS, enum=[ModeratorType.ACCESS, ModeratorType.VOTING]
+    ),
+    event_id: int,
+    user_id: int,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Add a voting or access moderator to an event. Voting moderators can create new votes for the event.
+    Access moderators can give add participants to an event.
+    """
+    event = crud.event.get(db=db, id=event_id)
+    if not event:
+        raise HTTPException(status_code=404, detail="event not found")
+    user = crud.user.get(db=db, id=user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="user not found")
+    if not crud.user.is_superuser(current_user) and (event.owner_id != current_user.id):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
+
+    mod_type = None
+
+    if moderator_type == ModeratorType.ACCESS:
+        mod_type = ModeratorType(ModeratorType.ACCESS)
+        for user in event.access_moderators:
+            if user.id == user_id:
+                raise HTTPException(
+                    status_code=400, detail="user is already a moderator"
+                )
+    elif moderator_type == ModeratorType.VOTING:
+        mod_type = ModeratorType(ModeratorType.VOTING)
+        for user in event.voting_moderators:
+            if user.id == user_id:
+                raise HTTPException(
+                    status_code=400, detail="user is already a moderator"
+                )
+    else:
+        raise HTTPException(
+            status_code=400, detail="moderator type is specified incorrectly"
+        )
+
+    event = crud.event.add_moderator_to_event(
+        db=db, event_id=event_id, user=user, moderator_type=mod_type
     )
     return event
 

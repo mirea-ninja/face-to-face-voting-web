@@ -31,13 +31,11 @@ class CRUDEvent(CRUDBase[Event, EventCreate, EventUpdate]):
             .limit(limit)
             .all()
         )
-        
+
     def add_participant_to_event(
         self, db: Session, *, event_id: int, user_id: int
     ) -> Event:
-        return (
-            db.query(self.model).filter(self.model.id == event_id).first()
-        )
+        return db.query(self.model).filter(self.model.id == event_id).first()
 
 
 event = CRUDEvent(Event)

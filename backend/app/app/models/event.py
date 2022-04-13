@@ -5,7 +5,11 @@ from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
 
-from .user import user_events_association_table, moderator_events_association_table
+from .user import (
+    acess_moderator_events_association_table,
+    user_events_association_table,
+    voting_moderator_events_association_table,
+)
 
 if TYPE_CHECKING:
     from .user import User  # noqa: F401
@@ -20,6 +24,13 @@ class Event(Base):
     participants = relationship(
         "User", secondary=user_events_association_table, back_populates="events"
     )
-    moderators = relationship(
-        "User", secondary=moderator_events_association_table, back_populates="moderator_in"
+    access_moderators = relationship(
+        "User",
+        secondary=acess_moderator_events_association_table,
+        back_populates="access_moderator_in",
+    )
+    voting_moderators = relationship(
+        "User",
+        secondary=voting_moderator_events_association_table,
+        back_populates="voting_moderator_in",
     )
