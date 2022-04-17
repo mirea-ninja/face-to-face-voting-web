@@ -70,6 +70,10 @@ def add_participant_to_event(
             raise HTTPException(status_code=400, detail="Not enough permissions")
 
     event = crud.event.add_participant_to_event(db=db, event_id=event_id, user=user)
+    access_log = schemas.AccessLogCreate(
+        event_id=event_id, given_by_id=current_user.id, received_id=user_id
+    )
+    crud.access_log.create(db, obj_in=access_log)
     return event
 
 

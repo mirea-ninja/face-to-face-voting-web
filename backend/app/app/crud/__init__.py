@@ -1,3 +1,4 @@
+from .crud_access_log import access_log
 from .crud_event import event
 from .crud_item import item
 from .crud_user import user

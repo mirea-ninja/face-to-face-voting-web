@@ -34,3 +34,4 @@ class Event(Base):
         secondary=voting_moderator_events_association_table,
         back_populates="voting_moderator_in",
     )
+    access_logs = relationship("AccessLog", back_populates="event")
