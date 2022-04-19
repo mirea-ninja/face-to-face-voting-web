@@ -21,7 +21,7 @@ class PollRename(BaseModel):
 
 
 class PollUpdate(BaseModel):
-    is_poll_running: bool = False
+    is_running: bool = False
     stop_at: Optional[datetime.datetime]
 
 
@@ -31,7 +31,7 @@ class PollInDBBase(PollBase):
     owner: User
     created_at: datetime.datetime
     owner_id: int
-    is_poll_running: bool = False
+    is_running: bool = False
     stop_at: Optional[datetime.datetime]
 
     class Config:

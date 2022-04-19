@@ -12,7 +12,7 @@ class Poll(Base):
     answers = relationship("Answer", back_populates="poll")
     answer_options = relationship("AnswerOption", back_populates="poll")
     created_at = Column(DateTime, server_default=func.now())
-    is_poll_running = Column(Boolean(), default=False)
+    is_running = Column(Boolean(), default=False)
     stop_at = Column(DateTime, nullable=True)
     event_id = Column(Integer, ForeignKey("event.id"))
     event = relationship("Event", back_populates="polls")

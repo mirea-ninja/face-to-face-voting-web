@@ -31,5 +31,8 @@ class CRUDPoll(CRUDBase[Poll, PollCreate, PollUpdate]):
             .all()
         )
 
+    def get_multi_by_event(self, db: Session, *, event_id: int) -> List[Poll]:
+        return db.query(self.model).filter(Poll.event_id == event_id).all()
+
 
 poll = CRUDPoll(Poll)
