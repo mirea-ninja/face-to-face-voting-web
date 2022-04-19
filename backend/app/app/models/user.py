@@ -41,7 +41,7 @@ class User(Base):
     is_active = Column(Boolean(), default=True)
     is_superuser = Column(Boolean(), default=False)
     items = relationship("Item", back_populates="owner")
-    polls = relationship("Poll", back_populates="owner")
+    polls_created = relationship("Poll", back_populates="owner")
     answers = relationship("Answer", back_populates="owner")
     events_owner = relationship("Event", back_populates="owner")
     events = relationship(

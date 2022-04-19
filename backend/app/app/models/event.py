@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
 class Event(Base):
     id = Column(Integer, primary_key=True, index=True)
+    is_open = Column(Boolean(), default=False)
     name = Column(String, index=True)
     description = Column(String, index=True, nullable=True)
     owner = relationship("User", back_populates="events")
@@ -35,3 +36,7 @@ class Event(Base):
         back_populates="voting_moderator_in",
     )
     access_logs = relationship("AccessLog", back_populates="event")
+    created_at = Column(DateTime, server_default=func.now())
+    start_at = Column(DateTime, nullable=False)
+    close_at = Column(DateTime, nullable=True)
+    polls = relationship("Poll", back_populates="event")

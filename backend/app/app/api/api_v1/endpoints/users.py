@@ -1,5 +1,6 @@
 from typing import Any, List
 
+import requests
 from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.encoders import jsonable_encoder
 from pydantic.networks import EmailStr
@@ -86,10 +87,11 @@ def read_user_me(
     return current_user
 
 
-@router.post("/open", response_model=schemas.User)
-def create_user_open(
+@router.post("/register", response_model=schemas.User)
+def register_user(
     *,
     db: Session = Depends(deps.get_db),
+    is_student: bool = Body(False),
     password: str = Body(...),
     email: EmailStr = Body(...),
     full_name: str = Body(None),
@@ -97,18 +99,66 @@ def create_user_open(
     """
     Create new user without the need to be logged in.
     """
-    if not settings.USERS_OPEN_REGISTRATION:
-        raise HTTPException(
-            status_code=403,
-            detail="Open user registration is forbidden on this server",
-        )
+    # if not settings.USERS_OPEN_REGISTRATION:
+    #     raise HTTPException(
+    #         status_code=403,
+    #         detail="Open user registration is forbidden on this server",
+    #     )
     user = crud.user.get_by_email(db, email=email)
     if user:
         raise HTTPException(
             status_code=400,
             detail="The user with this username already exists in the system",
         )
-    user_in = schemas.UserCreate(password=password, email=email, full_name=full_name)
+
+    if is_student:
+        api_url = "https://lk.mirea.ru/local/ajax/mrest.php"
+        payload = {"action": "login", "login": email, "password": password}
+        response = requests.get(api_url, params=payload)
+        if response.status_code != 200:
+            raise HTTPException(
+                status_code=response.status_code, detail="error when trying to log in"
+            )
+        response_data = response.json()
+        if "errors" in response_data:
+            raise HTTPException(
+                status_code=400, detail=response_data["errors"][0],
+            )
+
+        token = response_data["token"]
+        profile_api_url = api_url + "?action=getData&url=https://lk.mirea.ru/profile/"
+        profile_response = requests.get(
+            profile_api_url, headers={"Authorization": token}
+        )
+        if profile_response.status_code != 200:
+            raise HTTPException(
+                status_code=response.status_code,
+                detail="error when trying to get profile data",
+            )
+        profile_response_data = profile_response.json()
+        if "errors" in profile_response_data:
+            raise HTTPException(
+                status_code=400, detail=profile_response_data["errors"][0],
+            )
+        name = profile_response_data["arUser"]["NAME"]
+        last_name = profile_response_data["arUser"]["LAST_NAME"]
+        second_name = profile_response_data["arUser"]["SECOND_NAME"]
+        academic_group = profile_response_data["PROPERTIES"]["ACADEMIC_GROUP"][
+            "VALUE_TEXT"
+        ]
+        full_name = f"{name} {second_name} {last_name}"
+        user_in = schemas.UserCreate(
+            password=password,
+            email=email,
+            full_name=full_name,
+            academic_group=academic_group,
+            is_student=True,
+        )
+    else:
+        user_in = schemas.UserCreate(
+            password=password, email=email, full_name=full_name, is_student=False
+        )
+
     user = crud.user.create(db, obj_in=user_in)
     return user
 

@@ -10,7 +10,7 @@ router = APIRouter()
 
 
 @router.get("/{event_id}", response_model=List[schemas.AccessLog])
-def read_events(
+def read_access_logs(
     event_id: int,
     db: Session = Depends(deps.get_db),
     skip: int = 0,

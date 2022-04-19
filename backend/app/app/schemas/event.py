@@ -1,7 +1,9 @@
+import datetime
 from typing import List, Optional
 
 from pydantic import BaseModel
 
+from .poll import Poll
 from .user import User
 
 
@@ -9,6 +11,8 @@ from .user import User
 class EventBase(BaseModel):
     name: str
     description: Optional[str] = None
+    start_at: datetime.datetime
+    close_at: Optional[datetime.datetime]
 
 
 # Properties to receive on Event creation
@@ -28,6 +32,7 @@ class EventInDBBase(EventBase):
     participants: List[User]
     access_moderators: List[User]
     voting_moderators: List[User]
+    polls: List[Poll]
 
     class Config:
         orm_mode = True

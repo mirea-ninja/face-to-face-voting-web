@@ -166,20 +166,20 @@ def read_event(
     return event
 
 
-@router.delete("/{id}", response_model=schemas.Event)
-def delete_event(
-    *,
-    db: Session = Depends(deps.get_db),
-    id: int,
-    current_user: models.User = Depends(deps.get_current_active_user),
-) -> Any:
-    """
-    Delete an event.
-    """
-    event = crud.event.get(db=db, id=id)
-    if not event:
-        raise HTTPException(status_code=404, detail="event not found")
-    if not crud.user.is_superuser(current_user) and (event.owner_id != current_user.id):
-        raise HTTPException(status_code=400, detail="Not enough permissions")
-    event = crud.event.remove(db=db, id=id)
-    return event
+# @router.delete("/{id}", response_model=schemas.Event)
+# def delete_event(
+#     *,
+#     db: Session = Depends(deps.get_db),
+#     id: int,
+#     current_user: models.User = Depends(deps.get_current_active_user),
+# ) -> Any:
+#     """
+#     Delete an event.
+#     """
+#     event = crud.event.get(db=db, id=id)
+#     if not event:
+#         raise HTTPException(status_code=404, detail="event not found")
+#     if not crud.user.is_superuser(current_user) and (event.owner_id != current_user.id):
+#         raise HTTPException(status_code=400, detail="Not enough permissions")
+#     event = crud.event.remove(db=db, id=id)
+#     return event
