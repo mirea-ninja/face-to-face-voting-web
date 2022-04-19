@@ -7,9 +7,8 @@ from .user import User
 
 
 class AnswerBase(BaseModel):
-    text: str
-    owner_id: int
     poll_id: int
+    answer_option_id: int
 
 
 class AnswerCreate(AnswerBase):
@@ -17,11 +16,12 @@ class AnswerCreate(AnswerBase):
 
 
 class AnswerUpdate(AnswerBase):
-    pass
+    answer_option_id: int
 
 
 class AnswerInDBBase(AnswerBase):
     id: int
+    owner_id: int
     owner: User
     poll: Poll
     created_at: datetime.datetime

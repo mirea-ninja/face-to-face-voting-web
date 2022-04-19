@@ -1,4 +1,5 @@
 from .access_log import AccessLog, AccessLogCreate, AccessLogInDB, AccessLogUpdate
+from .answer import Answer, AnswerCreate, AnswerInDB, AnswerUpdate
 from .answer_option import (
     AnswerOption,
     AnswerOptionCreate,

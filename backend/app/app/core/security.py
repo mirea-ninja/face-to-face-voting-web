@@ -35,6 +35,13 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 
+def can_user_send_answer(user_id: int, event: Event):
+    """Returns True for participants"""
+    for user in event.participants:
+        if user.id == user_id:
+            return True
+
+
 def can_user_manage_voting(user_id: int, event: Event):
     """Returns True for voting moderators and event owners"""
     can_manage = False

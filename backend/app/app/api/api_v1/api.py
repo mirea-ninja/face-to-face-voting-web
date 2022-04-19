@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from app.api.api_v1.endpoints import (
     access_logs,
+    answers_option,
     events,
     items,
     login,
@@ -20,3 +21,6 @@ api_router.include_router(
     access_logs.router, prefix="/access-logs", tags=["access-logs"]
 )
 api_router.include_router(polls.router, prefix="/polls", tags=["polls"])
+api_router.include_router(
+    answers_option.router, prefix="/answer-option", tags=["answer-option"]
+)
