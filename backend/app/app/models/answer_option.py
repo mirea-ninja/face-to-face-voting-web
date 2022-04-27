@@ -9,4 +9,4 @@ class AnswerOption(Base):
     text = Column(String, index=True, nullable=False)
     poll_id = Column(Integer, ForeignKey("poll.id"))
     poll = relationship("Poll", back_populates="answer_options")
-    answers = relationship("Answer", back_populates="answer_options")
+    answers = relationship("Answer", back_populates="answer_option")
