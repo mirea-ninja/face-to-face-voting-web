@@ -143,7 +143,8 @@ def register_user(
         name = profile_response_data["arUser"]["NAME"]
         last_name = profile_response_data["arUser"]["LAST_NAME"]
         second_name = profile_response_data["arUser"]["SECOND_NAME"]
-        academic_group = profile_response_data["PROPERTIES"]["ACADEMIC_GROUP"][
+        student = list(profile_response_data["STUDENTS"].values())[0]
+        academic_group = student["PROPERTIES"]["ACADEMIC_GROUP"][
             "VALUE_TEXT"
         ]
         full_name = f"{name} {second_name} {last_name}"
