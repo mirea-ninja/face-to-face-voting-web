@@ -24,8 +24,7 @@ def read_users(
     """
     Retrieve users.
     """
-    users = crud.user.get_multi(db, skip=skip, limit=limit)
-    return users
+    return crud.user.get_multi(db, skip=skip, limit=limit)
 
 
 @router.post("/", response_model=schemas.User)
@@ -126,7 +125,7 @@ def register_user(
             )
 
         token = response_data["token"]
-        profile_api_url = api_url + "?action=getData&url=https://lk.mirea.ru/profile/"
+        profile_api_url = f"{api_url}?action=getData&url=https://lk.mirea.ru/profile/"
         profile_response = requests.get(
             profile_api_url, headers={"Authorization": token}
         )

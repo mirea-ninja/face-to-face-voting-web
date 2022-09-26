@@ -20,13 +20,13 @@ def read_events(
     """
     Retrieve events.
     """
-    if crud.user.is_superuser(current_user):
-        events = crud.event.get_multi(db, skip=skip, limit=limit)
-    else:
-        events = crud.event.get_multi_by_owner(
+    return (
+        crud.event.get_multi(db, skip=skip, limit=limit)
+        if crud.user.is_superuser(current_user)
+        else crud.event.get_multi_by_owner(
             db=db, owner_id=current_user.id, skip=skip, limit=limit
         )
-    return events
+    )
 
 
 @router.post("/", response_model=schemas.Event)
@@ -66,8 +66,7 @@ def add_participant_to_event(
     if not crud.user.is_superuser(current_user) and (event.owner_id != current_user.id):
         for user in event.access_moderators:
             pass
-        else:
-            raise HTTPException(status_code=400, detail="Not enough permissions")
+        raise HTTPException(status_code=400, detail="Not enough permissions")
 
     event = crud.event.add_participant_to_event(db=db, event_id=event_id, user=user)
     access_log = schemas.AccessLogCreate(

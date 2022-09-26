@@ -20,14 +20,13 @@ def read_polls(
     """
     Retrieve polls.
     """
-    if crud.user.is_superuser(current_user):
-        polls = crud.poll.get_multi(db, skip=skip, limit=limit)
-    else:
-        polls = crud.poll.get_multi_by_owner(
+    return (
+        crud.poll.get_multi(db, skip=skip, limit=limit)
+        if crud.user.is_superuser(current_user)
+        else crud.poll.get_multi_by_owner(
             db=db, owner_id=current_user.id, skip=skip, limit=limit
         )
-
-    return polls
+    )
 
 
 @router.get("/{event_id}", response_model=List[schemas.Poll])
@@ -43,14 +42,14 @@ def read_polls_by_event(
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
 
-    if can_user_view_poll_info(current_user.id) is False:
-        if not crud.user.is_superuser(current_user):
-            raise HTTPException(status_code=400, detail="Not enough permissions")
+    if can_user_view_poll_info(
+        current_user.id
+    ) is False and not crud.user.is_superuser(current_user):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
 
-    polls = crud.poll.get_multi_by_event(
+    return crud.poll.get_multi_by_event(
         db=db, owner_id=current_user.id, event_id=event_id
     )
-    return polls
 
 
 @router.post("/", response_model=schemas.Poll)
@@ -67,9 +66,10 @@ def create_poll(
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
 
-    if can_user_manage_voting(current_user.id, event) is False:
-        if not crud.user.is_superuser(current_user):
-            raise HTTPException(status_code=400, detail="Not enough permissions")
+    if can_user_manage_voting(
+        current_user.id, event
+    ) is False and not crud.user.is_superuser(current_user):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
 
     poll = crud.poll.create_with_owner(db=db, obj_in=poll_in, owner_id=current_user.id)
     return poll
@@ -91,9 +91,10 @@ def change_poll_question(
         raise HTTPException(status_code=404, detail="Poll not found")
 
     event = crud.event.get(db=db, id=poll.event_id)
-    if can_user_manage_voting(current_user.id, event):
-        if not crud.user.is_superuser(current_user):
-            raise HTTPException(status_code=400, detail="Not enough permissions")
+    if can_user_manage_voting(
+        current_user.id, event
+    ) and not crud.user.is_superuser(current_user):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
 
     poll = crud.poll.update(db=db, db_obj=poll, obj_in=poll_in)
     return poll
@@ -115,9 +116,10 @@ def update_poll(
         raise HTTPException(status_code=404, detail="Poll not found")
 
     event = crud.event.get(db=db, id=poll.event_id)
-    if can_user_manage_voting(current_user.id, event) is False:
-        if not crud.user.is_superuser(current_user):
-            raise HTTPException(status_code=400, detail="Not enough permissions")
+    if can_user_manage_voting(
+        current_user.id, event
+    ) is False and not crud.user.is_superuser(current_user):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
 
     poll = crud.poll.update(db=db, db_obj=poll, obj_in=poll_in)
     return poll
@@ -138,8 +140,9 @@ def read_poll(
         raise HTTPException(status_code=404, detail="Poll not found")
 
     event = crud.event.get(db=db, id=poll.event_id)
-    if can_user_view_poll_info(current_user.id, event) is False:
-        if not crud.user.is_superuser(current_user):
-            raise HTTPException(status_code=400, detail="Not enough permissions")
+    if can_user_view_poll_info(
+        current_user.id, event
+    ) is False and not crud.user.is_superuser(current_user):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
 
     return poll

@@ -26,13 +26,13 @@ def read_access_logs(
     if not event:
         raise HTTPException(status_code=404, detail="event not found")
 
-    moderator = False
-    for user in event.access_moderators:
-        if user.id == current_user.id:
-            moderator = True
-    if not crud.user.is_superuser(current_user) and (event.owner_id != current_user.id):
-        if moderator is False:
-            raise HTTPException(status_code=400, detail="Not enough permissions")
+    moderator = any(user.id == current_user.id for user in event.access_moderators)
+    if (
+        not crud.user.is_superuser(current_user)
+        and (event.owner_id != current_user.id)
+        and not moderator
+    ):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
 
     if given_by_id:
         user = crud.user.get(db=db, id=given_by_id)
@@ -49,7 +49,7 @@ def read_access_logs(
                 detail="user with the id passed to `received_id` was not found",
             )
 
-    logs = crud.access_log.get_multi(
+    return crud.access_log.get_multi(
         db=db,
         event_id=event_id,
         skip=skip,
@@ -57,4 +57,3 @@ def read_access_logs(
         given_by_id=given_by_id,
         received_id=received_id,
     )
-    return logs
