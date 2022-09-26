@@ -42,12 +42,10 @@ def read_answers_options_by_event(
         raise HTTPException(status_code=404, detail="Event not found")
 
     can_view_options = can_user_view_poll_info(current_user.id, event)
-    if can_view_options is False:
-        if not crud.user.is_superuser(current_user):
-            raise HTTPException(status_code=400, detail="Not enough permissions")
+    if can_view_options is False and not crud.user.is_superuser(current_user):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
 
-    answer_options = crud.answer_option.get_multi_by_event(db=db, event_id=event_id)
-    return answer_options
+    return crud.answer_option.get_multi_by_event(db=db, event_id=event_id)
 
 
 @router.post("/", response_model=schemas.AnswerOption)
@@ -65,9 +63,10 @@ def create_option(
         raise HTTPException(status_code=404, detail="Poll not found")
 
     event = crud.event.get(db, id=poll.event_id)
-    if can_user_manage_voting(current_user.id, event) is False:
-        if not crud.user.is_superuser(current_user):
-            raise HTTPException(status_code=400, detail="Not enough permissions")
+    if can_user_manage_voting(
+        current_user.id, event
+    ) is False and not crud.user.is_superuser(current_user):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
 
     if poll.is_running:
         raise HTTPException(
@@ -97,9 +96,10 @@ def update_option(
 
     poll = crud.poll.get(db, id=option_in.poll_id)
     event = crud.event.get(db, id=poll.event_id)
-    if can_user_manage_voting(current_user.id, event) is False:
-        if not crud.user.is_superuser(current_user):
-            raise HTTPException(status_code=400, detail="Not enough permissions")
+    if can_user_manage_voting(
+        current_user.id, event
+    ) is False and not crud.user.is_superuser(current_user):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
 
     answer_option = crud.answer_option.update(
         db=db, db_obj=answer_option, obj_in=option_in
@@ -122,9 +122,10 @@ def delete_answer_option(
         raise HTTPException(status_code=404, detail="Answer option not found")
     poll = crud.poll.get(db, id=answer_option.poll_id)
     event = crud.event.get(db, id=poll.event_id)
-    if can_user_manage_voting(current_user.id, event) is False:
-        if not crud.user.is_superuser(current_user):
-            raise HTTPException(status_code=400, detail="Not enough permissions")
+    if can_user_manage_voting(
+        current_user.id, event
+    ) is False and not crud.user.is_superuser(current_user):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
 
     if poll.is_running:
         raise HTTPException(

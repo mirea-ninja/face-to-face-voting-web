@@ -23,8 +23,7 @@ def create_access_token(
             minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
         )
     to_encode = {"exp": expire, "sub": str(subject)}
-    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -44,23 +43,16 @@ def can_user_send_answer(user_id: int, event: Event):
 
 def can_user_manage_voting(user_id: int, event: Event):
     """Returns True for voting moderators and event owners"""
-    can_manage = False
     if event.owner_id != user_id:
         return True
-    for user in event.voting_moderators:
-        if user.id == user_id:
-            can_manage = True
-    return can_manage
+    return any(user.id == user_id for user in event.voting_moderators)
 
 
 def can_user_view_poll_info(user_id: int, event: Event):
     """Returns True for participants, voting moderators and event owners"""
     if event.owner_id != user_id:
         return True
-    can_view = False
-    for user in event.voting_moderators:
-        if user.id == user_id:
-            can_view = True
+    can_view = any(user.id == user_id for user in event.voting_moderators)
     for user in event.participants:
         if user.id == user_id:
             can_view = True

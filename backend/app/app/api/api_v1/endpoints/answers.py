@@ -42,12 +42,10 @@ def read_answers_by_poll(
 
     event = crud.event.get(db, id=poll.event_id)
     can_view_options = can_user_view_poll_info(current_user.id, event)
-    if can_view_options is False:
-        if not crud.user.is_superuser(current_user):
-            raise HTTPException(status_code=400, detail="Not enough permissions")
+    if can_view_options is False and not crud.user.is_superuser(current_user):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
 
-    answers = crud.answer.get_multi_by_poll(db=db, poll_id=poll_id)
-    return answers
+    return crud.answer.get_multi_by_poll(db=db, poll_id=poll_id)
 
 
 @router.post("/", response_model=schemas.Answer)
@@ -65,9 +63,10 @@ def send_answer(
         raise HTTPException(status_code=404, detail="Poll not found")
 
     event = crud.event.get(db, id=poll.event_id)
-    if can_user_send_answer(current_user.id, event) is False:
-        if not crud.user.is_superuser(current_user):
-            raise HTTPException(status_code=400, detail="Not enough permissions")
+    if can_user_send_answer(
+        current_user.id, event
+    ) is False and not crud.user.is_superuser(current_user):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
 
     if not poll.is_running:
         raise HTTPException(
